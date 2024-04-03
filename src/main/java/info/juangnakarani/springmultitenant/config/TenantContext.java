@@ -1,13 +1,17 @@
 package info.juangnakarani.springmultitenant.config;
 
 public class TenantContext {
-    private static final ThreadLocal<String> CURRENT_TENANT = new ThreadLocal<>();
+    private static ThreadLocal<String> currentTenant = new InheritableThreadLocal<>();
 
     public static String getCurrentTenant() {
-        return CURRENT_TENANT.get();
+        return currentTenant.get();
     }
 
     public static void setCurrentTenant(String tenant) {
-        CURRENT_TENANT.set(tenant);
+        currentTenant.set(tenant);
+    }
+
+    public static void clear() {
+        currentTenant.remove();
     }
 }
