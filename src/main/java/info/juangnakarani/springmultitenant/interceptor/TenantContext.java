@@ -3,7 +3,7 @@ package info.juangnakarani.springmultitenant.interceptor;
 import info.juangnakarani.springmultitenant.pojo.Tenant;
 
 public class TenantContext {
-    private static ThreadLocal<Tenant> currentTenant = new InheritableThreadLocal<>();
+    private static final ThreadLocal<Tenant> currentTenant = new InheritableThreadLocal<>();
 
     public static Tenant getCurrentTenant() {
         return currentTenant.get();
