@@ -7,12 +7,12 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Service
-public class CustomerService {
-    @Autowired
-    CustomerRepository customerRepository;
+public interface CustomerService {
 
-    public List<Customer> getAllCustomers(){
-        return customerRepository.findAll();
-    }
+    List<Customer> getAllCustomers();
+    Customer save(Customer customer);
+
+    Customer update(Customer customer, Long id);
+
+    void delete(Long id);
 }
