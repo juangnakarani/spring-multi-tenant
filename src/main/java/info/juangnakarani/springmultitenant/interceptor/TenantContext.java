@@ -1,13 +1,15 @@
 package info.juangnakarani.springmultitenant.interceptor;
 
-public class TenantContext {
-    private static ThreadLocal<String> currentTenant = new InheritableThreadLocal<>();
+import info.juangnakarani.springmultitenant.pojo.Tenant;
 
-    public static String getCurrentTenant() {
+public class TenantContext {
+    private static ThreadLocal<Tenant> currentTenant = new InheritableThreadLocal<>();
+
+    public static Tenant getCurrentTenant() {
         return currentTenant.get();
     }
 
-    public static void setCurrentTenant(String tenant) {
+    public static void setCurrentTenant(Tenant tenant) {
         currentTenant.set(tenant);
     }
 

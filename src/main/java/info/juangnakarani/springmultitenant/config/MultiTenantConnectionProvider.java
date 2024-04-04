@@ -2,6 +2,7 @@ package info.juangnakarani.springmultitenant.config;
 
 import info.juangnakarani.springmultitenant.pojo.Tenant;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
