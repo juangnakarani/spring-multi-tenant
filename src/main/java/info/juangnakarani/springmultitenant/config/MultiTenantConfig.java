@@ -8,10 +8,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
 
 import javax.sql.DataSource;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 @Configuration
 public class MultiTenantConfig {
@@ -21,23 +23,24 @@ public class MultiTenantConfig {
 
 
     @Autowired
-    public MultitenantMaster multitenantMaster;
+    public MultiTenantConnectionProvider multiTenantConnectionProvider;
 
     @Bean
 //    @ConfigurationProperties(prefix = "tenants")
-    public DataSource dataSource() {
+    public DataSource dataSource() throws IOException {
+        Properties prop = multiTenantConnectionProvider.tenantProperties();
         Map<Object, Object> resolvedDataSources = new HashMap<>();
         try {
-            List<Tenant> tenantList = multitenantMaster.listTenant();
+            List<Tenant> tenantList = multiTenantConnectionProvider.listTenant();
             for(Tenant tenant : tenantList) {
                 DataSourceBuilder<?> dataSourceBuilder = DataSourceBuilder.create();
                 dataSourceBuilder.url("jdbc:postgresql://localhost:5432/"+ tenant.getName());
                 dataSourceBuilder.driverClassName("org.postgresql.Driver");
-                dataSourceBuilder.username("postgres");
-                dataSourceBuilder.password("password");
+                dataSourceBuilder.username(prop.getProperty("db.username"));
+                dataSourceBuilder.password(prop.getProperty("db.password"));
                 resolvedDataSources.put(tenant.getName(), dataSourceBuilder.build());
             }
-        } catch (SQLException e) {
+        } catch (SQLException | IOException e) {
             throw new RuntimeException(e);
         }
 
