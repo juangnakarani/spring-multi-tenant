@@ -12,7 +12,6 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
 @Component
-@Order(1)
 public class RequestInterceptor implements HandlerInterceptor {
     private static Logger log = LoggerFactory.getLogger(RequestInterceptor.class);
 
@@ -20,12 +19,12 @@ public class RequestInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
         String requestURI = request.getRequestURI();
-        String tenantName = request.getHeader("tenantName");
+        String tenantName = request.getHeader("x-tenant-name");
         log.info("Request URI: {}", requestURI);
         log.info("Tenant Id: {}", tenantName);
 
         if (tenantName == null) {
-            response.getWriter().write("Tenant is not present in the request header");
+            response.getWriter().write("x-tenant-name is not present in the request header");
             response.setStatus(400);
             return false;
         }
@@ -40,14 +39,14 @@ public class RequestInterceptor implements HandlerInterceptor {
         TenantContext.clear();
     }
 
-    @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler,
-                                @Nullable Exception ex) throws Exception {
-        if (ex != null) {
-            ex.printStackTrace();
-            log.error("An exception occurred with message: {}", ex.getMessage());
-        }
-
-    }
+//    @Override
+//    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler,
+//                                @Nullable Exception ex) throws Exception {
+//        if (ex != null) {
+//            ex.printStackTrace();
+//            log.error("An exception occurred with message: {}", ex.getMessage());
+//        }
+//
+//    }
 
 }

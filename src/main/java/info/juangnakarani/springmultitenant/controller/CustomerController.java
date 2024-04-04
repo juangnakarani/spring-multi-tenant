@@ -12,12 +12,12 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/multitenant")
+@RequestMapping("/customer")
 public class CustomerController {
     @Autowired
     CustomerService customerService;
 
-    @GetMapping("/customers")
+    @GetMapping("/list")
     public ResponseEntity<List<Customer>> getCustomer() {
         List<Customer> customers = customerService.getAllCustomers();
         return new ResponseEntity<>(customers, HttpStatus.OK);
