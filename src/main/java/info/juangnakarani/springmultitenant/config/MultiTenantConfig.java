@@ -23,15 +23,14 @@ public class MultiTenantConfig {
 
 
     @Autowired
-    public MultiTenantConnectionProvider multiTenantConnectionProvider;
+    public MultiTenantConnection multiTenantConnection;
 
     @Bean
-//    @ConfigurationProperties(prefix = "tenants")
     public DataSource dataSource() throws IOException {
-        Properties prop = multiTenantConnectionProvider.tenantProperties();
+        Properties prop = multiTenantConnection.tenantProperties();
         Map<Object, Object> resolvedDataSources = new HashMap<>();
         try {
-            List<Tenant> tenantList = multiTenantConnectionProvider.listTenant();
+            List<Tenant> tenantList = multiTenantConnection.listTenant();
             for(Tenant tenant : tenantList) {
                 DataSourceBuilder<?> dataSourceBuilder = DataSourceBuilder.create();
                 dataSourceBuilder.url("jdbc:postgresql://localhost:5432/"+ tenant.getName());

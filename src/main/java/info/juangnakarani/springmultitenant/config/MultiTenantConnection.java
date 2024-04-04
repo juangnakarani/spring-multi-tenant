@@ -2,7 +2,6 @@ package info.juangnakarani.springmultitenant.config;
 
 import info.juangnakarani.springmultitenant.pojo.Tenant;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -13,7 +12,6 @@ import java.io.File;
 import java.io.FileInputStream;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -22,11 +20,10 @@ import java.util.List;
 import java.util.Properties;
 
 @Component
-public class MultiTenantConnectionProvider {
+public class MultiTenantConnection {
     @Autowired
     private ResourceLoader resourceLoader;
 
-    @Bean
     public Properties tenantProperties() throws IOException {
         Resource resource = resourceLoader.getResource("classpath:tenant.properties");
         File file = resource.getFile();
@@ -35,8 +32,8 @@ public class MultiTenantConnectionProvider {
         return tenantProperties;
     }
 
-    @Bean
-    public DataSource multitenantMasterDataSource() throws IOException {
+
+    public DataSource tenantDataSource() throws IOException {
         Properties prop = this.tenantProperties();
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName("org.postgresql.Driver");
@@ -47,10 +44,9 @@ public class MultiTenantConnectionProvider {
         return dataSource;
     }
 
-    @Bean
     public List<Tenant> listTenant() throws SQLException, IOException {
         List<Tenant> tenantList = new ArrayList<>();
-        PreparedStatement pstmt = MultiTenantConnectionProvider.this.multitenantMasterDataSource().getConnection().prepareStatement("select * from tenants");
+        PreparedStatement pstmt = MultiTenantConnection.this.tenantDataSource().getConnection().prepareStatement("select * from tenants");
         ResultSet rs = pstmt.executeQuery();
         while(rs.next()) {
             String name = rs.getString("name");
