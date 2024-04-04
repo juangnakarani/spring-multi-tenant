@@ -1,14 +1,18 @@
 package info.juangnakarani.springmultitenant.interceptor;
 
-import info.juangnakarani.springmultitenant.config.TenantContext;
+//import com.baeldung.multitenant.security.AuthenticationService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.annotation.Order;
 import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
+@Component
+@Order(1)
 public class RequestInterceptor implements HandlerInterceptor {
     private static Logger log = LoggerFactory.getLogger(RequestInterceptor.class);
 
@@ -16,16 +20,16 @@ public class RequestInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
         String requestURI = request.getRequestURI();
-        String tenantId = request.getHeader("tenantId");
+        String tenantName = request.getHeader("tenantName");
         log.info("Request URI: {}", requestURI);
-        log.info("Tenant Id: {}", tenantId);
+        log.info("Tenant Id: {}", tenantName);
 
-        if (tenantId == null) {
-            response.getWriter().write("Tenant Id is not present in the request header");
+        if (tenantName == null) {
+            response.getWriter().write("Tenant is not present in the request header");
             response.setStatus(400);
             return false;
         }
-        TenantContext.setCurrentTenant(tenantId);
+        TenantContext.setCurrentTenant(tenantName);
         return true;
     }
 
@@ -45,4 +49,5 @@ public class RequestInterceptor implements HandlerInterceptor {
         }
 
     }
+
 }

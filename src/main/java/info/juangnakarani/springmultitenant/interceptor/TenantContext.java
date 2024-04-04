@@ -1,4 +1,4 @@
-package info.juangnakarani.springmultitenant.config;
+package info.juangnakarani.springmultitenant.interceptor;
 
 public class TenantContext {
     private static ThreadLocal<String> currentTenant = new InheritableThreadLocal<>();
