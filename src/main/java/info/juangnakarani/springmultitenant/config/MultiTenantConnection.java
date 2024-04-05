@@ -1,6 +1,9 @@
 package info.juangnakarani.springmultitenant.config;
 
+import info.juangnakarani.springmultitenant.interceptor.RequestInterceptor;
 import info.juangnakarani.springmultitenant.pojo.Tenant;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -19,6 +22,8 @@ import java.util.Properties;
 
 @Component
 public class MultiTenantConnection {
+
+    private static Logger log = LoggerFactory.getLogger(RequestInterceptor.class);
     @Autowired
     private ResourceLoader resourceLoader;
 
@@ -42,22 +47,24 @@ public class MultiTenantConnection {
         return dataSource;
     }
 
-    public void createDatabaseTenantMaster(){
+    public void createDatabase(String dbName){
         try {
             Connection c = DriverManager.getConnection("jdbc:postgresql://localhost:5432/", tenantProperties().getProperty("db.username"), tenantProperties().getProperty("db.password"));
             Statement statement = c.createStatement();
-            statement.executeUpdate("CREATE DATABASE tenant_master;");
+            String sql = String.format("CREATE DATABASE %s;", dbName);
+            statement.executeUpdate(sql);
             statement.close();
-
-            PreparedStatement psTabble = tenantDataSource().getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS public.tenants (name varchar NULL);");
-            psTabble.executeUpdate();
-
-            PreparedStatement psInsert = tenantDataSource().getConnection().prepareStatement("INSERT INTO public.tenants (name) VALUES('default');");
-            psInsert.executeUpdate();
-
         } catch (SQLException | IOException e) {
-            throw new RuntimeException(e);
+            log.info(e.toString());
         }
+    }
+
+    public void initMasterDb() throws IOException, SQLException {
+        PreparedStatement psTabble = tenantDataSource().getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS public.tenants (name varchar NULL);");
+        psTabble.executeUpdate();
+
+        PreparedStatement psInsert = tenantDataSource().getConnection().prepareStatement("INSERT INTO public.tenants (name) VALUES('default');");
+        psInsert.executeUpdate();
     }
 
     public List<Tenant> listTenant() throws SQLException, IOException {
