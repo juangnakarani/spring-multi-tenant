@@ -1,11 +1,19 @@
 package info.juangnakarani.springmultitenant.config;
 
 import info.juangnakarani.springmultitenant.pojo.Tenant;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.Primary;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
+import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 
 import javax.sql.DataSource;
 import java.io.IOException;
@@ -16,6 +24,8 @@ import java.util.Map;
 import java.util.Properties;
 
 @Configuration
+@EnableJpaRepositories(basePackages = "info.juangnakarani.springmultitenant", transactionManagerRef = "transcationManager", entityManagerFactoryRef = "entityManager")
+@RequiredArgsConstructor
 public class MultiTenantConfig {
 
 //    @Value("${defaultTenant}")
@@ -25,8 +35,20 @@ public class MultiTenantConfig {
     @Autowired
     public TenantConnection tenantConnection;
 
+    @Bean(name = "entityManager")
+    public LocalContainerEntityManagerFactoryBean entityManagerFactoryBean(EntityManagerFactoryBuilder builder) {
+        return builder.dataSource(dataSource()).packages("info.juangnakarani.springmultitenant").build();
+    }
+
+    @Bean(name = "transcationManager")
+    public JpaTransactionManager transactionManager(
+            @Autowired @Qualifier("entityManager") LocalContainerEntityManagerFactoryBean entityManagerFactoryBean) {
+        return new JpaTransactionManager(entityManagerFactoryBean.getObject());
+    }
+
     @Bean
-    public DataSource dataSource() throws IOException, SQLException {
+    @Primary
+    public DataSource dataSource(){
 
         tenantConnection.createDatabase("tenant_master");
         DataSource tenantMasterDataSource = tenantConnection.tenantDataSource("tenant_master");
@@ -35,7 +57,12 @@ public class MultiTenantConfig {
         tenantConnection.createDatabase("tenant_default");
         tenantConnection.createCustomerTable("tenant_default");
 
-        Properties prop = tenantConnection.tenantProperties();
+        Properties prop = null;
+        try {
+            prop = tenantConnection.tenantProperties();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         Map<Object, Object> resolvedDataSources = new HashMap<>();
         try {
             List<Tenant> tenantList = tenantConnection.listTenant("tenant_master");

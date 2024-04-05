@@ -29,39 +29,6 @@ public class ApplicationConfig implements WebMvcConfigurer {
 
     }
 
-    @Autowired
-    private JpaProperties jpaProperties;
-
-    @Bean
-    JpaVendorAdapter jpaVendorAdapter() {
-        return new HibernateJpaVendorAdapter();
-    }
-
-    @Bean
-    public PlatformTransactionManager transactionManager(EntityManagerFactory emf) {
-        JpaTransactionManager transactionManager = new JpaTransactionManager();
-        transactionManager.setEntityManagerFactory(emf);
-
-        return transactionManager;
-    }
-
-    @Bean
-    LocalContainerEntityManagerFactoryBean entityManagerFactory(
-            DataSource dataSource
-    ) {
-
-        Map<String, Object> jpaPropertiesMap = new HashMap<>(jpaProperties.getProperties());
-        jpaPropertiesMap.put(Environment.FORMAT_SQL, true);
-        jpaPropertiesMap.put(Environment.SHOW_SQL, true);
-
-        LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
-        em.setDataSource(dataSource);
-        em.setPackagesToScan("info.juangnakarani*");
-        em.setJpaVendorAdapter(this.jpaVendorAdapter());
-        em.setJpaPropertyMap(jpaPropertiesMap);
-        return em;
-    }
-
     @Override
     public void addInterceptors(final InterceptorRegistry registry) {
         registry.addInterceptor(requestInterceptor());
