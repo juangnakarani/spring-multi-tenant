@@ -11,24 +11,23 @@ In this approach, each tenant’s data is kept in a separate database instance a
 http://localhost:8080/database/create?dbName=test_db_tenant_new
 ```
 
-## CRUD customer
-To access tenant request must have header ```x-tenant-name```.
-### 1. Create customer
+To access customer tenant request must have header ```x-tenant-name```. Eg: ```x-tenant-name=test_db_tenant_new```.
+### 2. Create customer
 mehtod POST
 ```bash
 http://localhost:8080/database/create?dbName=test_db_tenant_new
 ```
-### 2. Update customer
+### 3. Update customer
 mehtod PUT
 ```bash
 http://localhost:8080/database/create
 ```
-### 3. GET customer
+### 4. GET customer
 mehtod GET
 ```bash
 http://localhost:8080/database/get/{id}
 ```
-### 4. List customer
+### 5. List customer
 mehtod GET
 ```bash
 http://localhost:8080/database/list
