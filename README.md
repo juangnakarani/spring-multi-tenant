@@ -3,7 +3,7 @@
 ## Architecture
 ### Separated database
 In this approach, each tenant’s data is kept in a separate database instance and is isolated from other tenants.
-[!multi-database](https://www.baeldung.com/wp-content/uploads/2022/08/database_per_tenant.png)
+![img per database](https://www.baeldung.com/wp-content/uploads/2022/08/database_per_tenant.png)
 
 ## End-point
 1. Create database
