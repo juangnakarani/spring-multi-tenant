@@ -12,9 +12,7 @@ import java.io.File;
 import java.io.FileInputStream;
 
 import java.io.IOException;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -42,6 +40,24 @@ public class MultiTenantConnection {
         dataSource.setPassword(prop.getProperty("db.password"));
 
         return dataSource;
+    }
+
+    public void createDatabaseTenantMaster(){
+        try {
+            Connection c = DriverManager.getConnection("jdbc:postgresql://localhost:5432/", tenantProperties().getProperty("db.username"), tenantProperties().getProperty("db.password"));
+            Statement statement = c.createStatement();
+            statement.executeUpdate("CREATE DATABASE tenant_master;");
+            statement.close();
+
+            PreparedStatement psTabble = tenantDataSource().getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS public.tenants (name varchar NULL);");
+            psTabble.executeUpdate();
+
+            PreparedStatement psInsert = tenantDataSource().getConnection().prepareStatement("INSERT INTO public.tenants (name) VALUES('default');");
+            psInsert.executeUpdate();
+
+        } catch (SQLException | IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public List<Tenant> listTenant() throws SQLException, IOException {

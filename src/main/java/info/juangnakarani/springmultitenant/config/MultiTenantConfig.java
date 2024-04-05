@@ -27,6 +27,8 @@ public class MultiTenantConfig {
 
     @Bean
     public DataSource dataSource() throws IOException {
+        multiTenantConnection.createDatabaseTenantMaster();
+
         Properties prop = multiTenantConnection.tenantProperties();
         Map<Object, Object> resolvedDataSources = new HashMap<>();
         try {
