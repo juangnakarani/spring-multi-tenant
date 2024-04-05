@@ -11,7 +11,7 @@ In this approach, each tenant’s data is kept in a separate database instance a
 http://localhost:8080/database/create?dbName=test_db_tenant_new
 ```
 
-To access customer tenant request must have header ```x-tenant-name```. Eg: ```x-tenant-name=test_db_tenant_new```.
+To access customer tenant request must have header ```x-tenant-name``` e.g: ```x-tenant-name=test_db_tenant_new```.
 ### 2. Create customer
 mehtod POST
 ```bash
