@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Properties;
 
 @Component
-public class MultiTenantConnection {
+public class TenantConnection {
 
     private static Logger log = LoggerFactory.getLogger(RequestInterceptor.class);
     @Autowired
@@ -36,11 +36,12 @@ public class MultiTenantConnection {
     }
 
 
-    public DataSource tenantDataSource() throws IOException {
+    public DataSource tenantDataSource(String dbName) throws IOException {
         Properties prop = this.tenantProperties();
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
+        String dbUrl = String.format("%s%s",prop.getProperty("db.baseurl"), dbName);
+        dataSource.setUrl(dbUrl);
         dataSource.setDriverClassName("org.postgresql.Driver");
-        dataSource.setUrl(prop.getProperty("db.url"));
         dataSource.setUsername(prop.getProperty("db.username"));
         dataSource.setPassword(prop.getProperty("db.password"));
 
@@ -59,17 +60,34 @@ public class MultiTenantConnection {
         }
     }
 
-    public void initMasterDb() throws IOException, SQLException {
-        PreparedStatement psTabble = tenantDataSource().getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS public.tenants (name varchar NULL);");
-        psTabble.executeUpdate();
+    public void initMasterDb(DataSource dataSource) {
+        try {
+            String sqlCreate = "CREATE TABLE IF NOT EXISTS public.tenants (name varchar NULL);";
+            PreparedStatement psTable = dataSource.getConnection().prepareStatement(sqlCreate);
+            psTable.executeUpdate();
 
-        PreparedStatement psInsert = tenantDataSource().getConnection().prepareStatement("INSERT INTO public.tenants (name) VALUES('default');");
-        psInsert.executeUpdate();
+            String sqlInsert = "INSERT INTO public.tenants (name) VALUES('default_tenant');";
+            PreparedStatement psInsert = dataSource.getConnection().prepareStatement(sqlInsert);
+            psInsert.executeUpdate();
+        } catch (SQLException e) {
+            log.info(e.toString());
+        }
     }
 
-    public List<Tenant> listTenant() throws SQLException, IOException {
+    public void createCustomerTable(String dbName) {
+        try {
+            String sqlCreate = "CREATE TABLE public.customer (name varchar NULL);";
+            PreparedStatement psTable = tenantDataSource(dbName).getConnection().prepareStatement(sqlCreate);
+            psTable.executeUpdate();
+
+        } catch (SQLException | IOException e) {
+            log.info(e.toString());
+        }
+    }
+
+    public List<Tenant> listTenant(String dbName) throws SQLException, IOException {
         List<Tenant> tenantList = new ArrayList<>();
-        PreparedStatement pstmt = MultiTenantConnection.this.tenantDataSource().getConnection().prepareStatement("select * from tenants");
+        PreparedStatement pstmt = TenantConnection.this.tenantDataSource(dbName).getConnection().prepareStatement("select * from tenants");
         ResultSet rs = pstmt.executeQuery();
         while(rs.next()) {
             String name = rs.getString("name");

@@ -1,7 +1,7 @@
 package info.juangnakarani.springmultitenant.interceptor;
 
 //import com.baeldung.multitenant.security.AuthenticationService;
-import info.juangnakarani.springmultitenant.config.MultiTenantConnection;
+import info.juangnakarani.springmultitenant.config.TenantConnection;
 import info.juangnakarani.springmultitenant.pojo.Tenant;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -20,7 +20,7 @@ public class RequestInterceptor implements HandlerInterceptor {
     private static Logger log = LoggerFactory.getLogger(RequestInterceptor.class);
 
     @Autowired
-    MultiTenantConnection multiTenantConnection;
+    TenantConnection tenantConnection;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
@@ -35,7 +35,7 @@ public class RequestInterceptor implements HandlerInterceptor {
             response.setStatus(400);
             return false;
         }
-        List<Tenant> tenantList = multiTenantConnection.listTenant();
+        List<Tenant> tenantList = tenantConnection.listTenant("tenant_master");
         for(Tenant tenant : tenantList) {
             if(tenant.getName().equals(tenantName)) {
                 //found it!

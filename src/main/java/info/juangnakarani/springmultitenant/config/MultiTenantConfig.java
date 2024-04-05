@@ -23,17 +23,22 @@ public class MultiTenantConfig {
 
 
     @Autowired
-    public MultiTenantConnection multiTenantConnection;
+    public TenantConnection tenantConnection;
 
     @Bean
     public DataSource dataSource() throws IOException, SQLException {
-        multiTenantConnection.createDatabase("tenant_master");
-        multiTenantConnection.initMasterDb();
 
-        Properties prop = multiTenantConnection.tenantProperties();
+        tenantConnection.createDatabase("tenant_master");
+        DataSource tenantMasterDataSource = tenantConnection.tenantDataSource("tenant_master");
+        tenantConnection.initMasterDb(tenantMasterDataSource);
+
+        tenantConnection.createDatabase("tenant_default");
+        tenantConnection.createCustomerTable("tenant_default");
+
+        Properties prop = tenantConnection.tenantProperties();
         Map<Object, Object> resolvedDataSources = new HashMap<>();
         try {
-            List<Tenant> tenantList = multiTenantConnection.listTenant();
+            List<Tenant> tenantList = tenantConnection.listTenant("tenant_master");
             for(Tenant tenant : tenantList) {
                 DataSourceBuilder<?> dataSourceBuilder = DataSourceBuilder.create();
                 dataSourceBuilder.url("jdbc:postgresql://localhost:5432/"+ tenant.getName());
