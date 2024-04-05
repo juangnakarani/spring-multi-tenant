@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 public class MultiTenantDataSource extends AbstractRoutingDataSource {
     @Override
-    protected Tenant determineCurrentLookupKey() {
+    protected String determineCurrentLookupKey() {
         return TenantContext.getCurrentTenant();
     }
 
