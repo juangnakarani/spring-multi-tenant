@@ -36,21 +36,27 @@ public class TenantConnection {
     }
 
 
-    public DataSource tenantDataSource(String dbName) throws IOException {
-        Properties prop = this.tenantProperties();
-        DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        String dbUrl = String.format("%s%s",prop.getProperty("db.baseurl"), dbName);
-        dataSource.setUrl(dbUrl);
-        dataSource.setDriverClassName("org.postgresql.Driver");
-        dataSource.setUsername(prop.getProperty("db.username"));
-        dataSource.setPassword(prop.getProperty("db.password"));
+    public DataSource tenantDataSource(String dbName) {
+        Properties prop = null;
+        try {
+            prop = this.tenantProperties();
+            DriverManagerDataSource dataSource = new DriverManagerDataSource();
+            String dbUrl = String.format("%s%s",prop.getProperty("db.baseurl"), dbName);
+            dataSource.setUrl(dbUrl);
+            dataSource.setDriverClassName("org.postgresql.Driver");
+            dataSource.setUsername(prop.getProperty("db.username"));
+            dataSource.setPassword(prop.getProperty("db.password"));
 
-        return dataSource;
+            return dataSource;
+        } catch (IOException e) {
+            log.info(e.toString());
+        }
+        return null;
     }
 
     public void createDatabase(String dbName){
         try {
-            Connection c = DriverManager.getConnection("jdbc:postgresql://localhost:5432/", tenantProperties().getProperty("db.username"), tenantProperties().getProperty("db.password"));
+            Connection c = DriverManager.getConnection(tenantProperties().getProperty("db.baseurl"), tenantProperties().getProperty("db.username"), tenantProperties().getProperty("db.password"));
             Statement statement = c.createStatement();
             String sql = String.format("CREATE DATABASE %s;", dbName);
             statement.executeUpdate(sql);
@@ -66,7 +72,15 @@ public class TenantConnection {
             PreparedStatement psTable = dataSource.getConnection().prepareStatement(sqlCreate);
             psTable.executeUpdate();
 
-            String sqlInsert = "INSERT INTO public.tenants (name) VALUES('default_tenant');";
+            insertIntoMasterTenant(dataSource, "tenant_default");
+        } catch (SQLException e) {
+            log.info(e.toString());
+        }
+    }
+
+    public void insertIntoMasterTenant(DataSource dataSource, String name) {
+        try {
+            String sqlInsert = String.format("INSERT INTO public.tenants (name) VALUES('%s');", name);
             PreparedStatement psInsert = dataSource.getConnection().prepareStatement(sqlInsert);
             psInsert.executeUpdate();
         } catch (SQLException e) {
@@ -76,18 +90,18 @@ public class TenantConnection {
 
     public void createCustomerTable(String dbName) {
         try {
-            String sqlCreate = "CREATE TABLE public.customer (name varchar NULL);";
+            String sqlCreate = "CREATE TABLE IF NOT EXISTS public.customer (name varchar NULL);";
             PreparedStatement psTable = tenantDataSource(dbName).getConnection().prepareStatement(sqlCreate);
             psTable.executeUpdate();
 
-        } catch (SQLException | IOException e) {
+        } catch (SQLException e) {
             log.info(e.toString());
         }
     }
 
     public List<Tenant> listTenant(String dbName) throws SQLException, IOException {
         List<Tenant> tenantList = new ArrayList<>();
-        PreparedStatement pstmt = TenantConnection.this.tenantDataSource(dbName).getConnection().prepareStatement("select * from tenants");
+        PreparedStatement pstmt = TenantConnection.this.tenantDataSource(dbName).getConnection().prepareStatement("SELECT * FROM tenants");
         ResultSet rs = pstmt.executeQuery();
         while(rs.next()) {
             String name = rs.getString("name");
