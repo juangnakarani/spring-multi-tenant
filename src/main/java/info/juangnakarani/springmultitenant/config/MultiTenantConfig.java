@@ -55,7 +55,7 @@ public class MultiTenantConfig {
         tenantConnection.initMasterDb(tenantMasterDataSource);
 
         tenantConnection.createDatabase("tenant_default");
-        tenantConnection.createCustomerTable("tenant_default");
+//        tenantConnection.createCustomerTable("tenant_default");
 
         Properties prop = null;
         try {

@@ -19,7 +19,6 @@ public class DatabaseController {
     @PostMapping("/create")
     public ResponseEntity<String> create(@RequestParam String dbName){
         tenantConnection.createDatabase(dbName);
-        tenantConnection.createCustomerTable(dbName);
 
         DataSource tenantMasterDataSource = tenantConnection.tenantDataSource(dbName);
         tenantConnection.insertIntoMasterTenant(tenantMasterDataSource, dbName);
