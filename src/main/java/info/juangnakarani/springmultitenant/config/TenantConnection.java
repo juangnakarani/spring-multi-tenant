@@ -88,16 +88,16 @@ public class TenantConnection {
         }
     }
 
-//    public void createCustomerTable(String dbName) {
-//        try {
-//            String sqlCreate = "CREATE TABLE IF NOT EXISTS public.customer (name varchar NULL);";
-//            PreparedStatement psTable = tenantDataSource(dbName).getConnection().prepareStatement(sqlCreate);
-//            psTable.executeUpdate();
-//
-//        } catch (SQLException e) {
-//            log.info(e.toString());
-//        }
-//    }
+    public void createCustomerTable(String dbName) {
+        try {
+            String sqlCreate = "CREATE TABLE public.customers (id int8 NOT NULL, name varchar(255) NULL, CONSTRAINT customers_pkey PRIMARY KEY (id));";
+            PreparedStatement psTable = tenantDataSource(dbName).getConnection().prepareStatement(sqlCreate);
+            psTable.executeUpdate();
+
+        } catch (SQLException e) {
+            log.info(e.toString());
+        }
+    }
 
     public List<Tenant> listTenant(String dbName) throws SQLException, IOException {
         List<Tenant> tenantList = new ArrayList<>();
