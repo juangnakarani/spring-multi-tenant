@@ -31,6 +31,11 @@ public class CustomerController {
         return customerService.update(customer, customerId);
     }
 
+    @GetMapping("/get/{id}")
+    public Customer get(@PathVariable("id") Long customerId){
+        return customerService.get(customerId);
+    }
+
     @DeleteMapping("/delete/{id}")
     public String delete(@PathVariable("id") Long id){
         customerService.delete(id);

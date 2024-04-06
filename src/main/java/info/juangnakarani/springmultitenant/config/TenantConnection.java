@@ -23,6 +23,8 @@ import java.util.Properties;
 @Component
 public class TenantConnection {
 
+    public static final String TENANT_MASTER = "tenant_master";
+
     private static Logger log = LoggerFactory.getLogger(RequestInterceptor.class);
     @Autowired
     private ResourceLoader resourceLoader;
@@ -68,20 +70,20 @@ public class TenantConnection {
 
     public void initMasterDb(DataSource dataSource) {
         try {
-            String sqlCreate = "CREATE TABLE IF NOT EXISTS public.tenants (name varchar NULL);";
+            String sqlCreate = "CREATE TABLE IF NOT EXISTS public.tenants (name varchar NULL, CONSTRAINT tenants_un UNIQUE (name));";
             PreparedStatement psTable = dataSource.getConnection().prepareStatement(sqlCreate);
             psTable.executeUpdate();
 
-            insertIntoMasterTenant(dataSource, "tenant_default");
+            insertIntoMasterTenant("tenant_default");
         } catch (SQLException e) {
             log.info(e.toString());
         }
     }
 
-    public void insertIntoMasterTenant(DataSource dataSource, String name) {
+    public void insertIntoMasterTenant(String name) {
         try {
             String sqlInsert = String.format("INSERT INTO public.tenants (name) VALUES('%s');", name);
-            PreparedStatement psInsert = dataSource.getConnection().prepareStatement(sqlInsert);
+            PreparedStatement psInsert = tenantDataSource(TENANT_MASTER).getConnection().prepareStatement(sqlInsert);
             psInsert.executeUpdate();
         } catch (SQLException e) {
             log.info(e.toString());

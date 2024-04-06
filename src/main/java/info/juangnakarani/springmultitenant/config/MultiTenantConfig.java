@@ -37,7 +37,7 @@ public class MultiTenantConfig {
 
     @Bean(name = "entityManager")
     public LocalContainerEntityManagerFactoryBean entityManagerFactoryBean(EntityManagerFactoryBuilder builder) {
-        return builder.dataSource(dataSource()).packages("info.juangnakarani.springmultitenant").build();
+        return builder.dataSource(dataSource()).packages("info.juangnakarani.springmultitenant.entity").build();
     }
 
     @Bean(name = "transcationManager")
@@ -50,12 +50,11 @@ public class MultiTenantConfig {
     @Primary
     public DataSource dataSource(){
 
-        tenantConnection.createDatabase("tenant_master");
-        DataSource tenantMasterDataSource = tenantConnection.tenantDataSource("tenant_master");
+        tenantConnection.createDatabase(TenantConnection.TENANT_MASTER);
+        DataSource tenantMasterDataSource = tenantConnection.tenantDataSource(TenantConnection.TENANT_MASTER);
         tenantConnection.initMasterDb(tenantMasterDataSource);
 
         tenantConnection.createDatabase("tenant_default");
-//        tenantConnection.createCustomerTable("tenant_default");
 
         Properties prop = null;
         try {
@@ -64,8 +63,9 @@ public class MultiTenantConfig {
             throw new RuntimeException(e);
         }
         Map<Object, Object> resolvedDataSources = new HashMap<>();
+
         try {
-            List<Tenant> tenantList = tenantConnection.listTenant("tenant_master");
+            List<Tenant> tenantList = tenantConnection.listTenant(TenantConnection.TENANT_MASTER);
             for(Tenant tenant : tenantList) {
                 DataSourceBuilder<?> dataSourceBuilder = DataSourceBuilder.create();
                 dataSourceBuilder.url("jdbc:postgresql://localhost:5432/"+ tenant.getName());
@@ -79,7 +79,6 @@ public class MultiTenantConfig {
         }
 
         String firstKey = (String) resolvedDataSources.keySet().iterator().next();
-
 
         AbstractRoutingDataSource dataSource = new MultiTenantDataSource();
         dataSource.setDefaultTargetDataSource(resolvedDataSources.get(firstKey));
